@@ -1,0 +1,31 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Image scratch files (export final .png/.gif to Images/ instead)
+*.psd
+*.xcf
+*.kra
+*.afdesign
+*.afphoto
+*.ase
+
+# Make absolutely sure plugin source/content never lands here by accident
+Source/
+Content/
+Binaries/
+Intermediate/
+DerivedDataCache/
+Saved/
+*.uasset
+*.umap
+*.uplugin
+*.uproject
