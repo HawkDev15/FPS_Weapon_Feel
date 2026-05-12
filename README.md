@@ -6,8 +6,9 @@
 [![Platform](https://img.shields.io/badge/platform-Win64-lightgrey)](#)
 [![License](https://img.shields.io/badge/license-Commercial-orange)](#license)
 
-<!-- Replace with your hero GIF/screenshot once recorded. Recommended: 800x450 GIF, ~5 sec loop. -->
-![Hero](Images/hero.gif)
+[![Watch the demo](https://img.youtube.com/vi/Y64iqB50EkQ/maxresdefault.jpg)](https://youtu.be/Y64iqB50EkQ)
+
+▶ **[Watch the demo on YouTube](https://youtu.be/Y64iqB50EkQ)** &nbsp;|&nbsp; 🎮 **[Download playable test build](https://drive.google.com/file/d/1yBWzZa6JJia65RZ-lGnIGux_5tlnMu7W/view?usp=sharing)**
 
 ---
 
@@ -90,9 +91,11 @@ Patterns are **per-weapon assets** — make one for each gun, drop into the corr
 
 ---
 
-## Buy on Fab
+## Try it / Buy it
 
-[Link to Fab listing — TBD]
+- 🎮 [**Download playable test build**](https://drive.google.com/file/d/1yBWzZa6JJia65RZ-lGnIGux_5tlnMu7W/view?usp=sharing) — packaged demo, no engine required
+- ▶ [Watch the demo on YouTube](https://youtu.be/Y64iqB50EkQ)
+- 🛒 Fab listing — *coming soon*
 
 ---
 
