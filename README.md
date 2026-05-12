@@ -41,6 +41,7 @@ Building good FPS weapon feel from scratch is a pile of small problems that all 
 4. On burst end, call `EndFire`.
 
 That's it.
+<img width="372" height="226" alt="image" src="https://github.com/user-attachments/assets/de27e70f-44fe-44ff-a243-92041f2eb6d3" />
 
 ![Component hierarchy](Images/hierarchy.png)
 ![Recoil Pattern editor](Images/pattern-editor.png)
