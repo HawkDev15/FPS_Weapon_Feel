@@ -16,7 +16,7 @@
 
 Building good FPS weapon feel from scratch is a pile of small problems that all have to work together: rotation lag that doesn't twitch, breathing that fades during movement, walk bob that locks to the ground, recoil that lifts the view *and* the gun, recovery that doesn't pop, and motion that looks the same on 30 FPS and 144 FPS.
 
-**FPS Weapon Feel** solves all of these in one component. Attach it under your camera, call `FireShot()` on every bullet, and you're done. No tick orchestration, no replication boilerplate, no math.
+**FPS Weapon Feel** solves all of these in one component. Attach it under your camera, cache your weapon's profile via `InitializeRecoilData`, call `FireShot()` on every bullet, and you're done. No tick orchestration, no replication boilerplate, no math.
 
 ---
 
@@ -37,8 +37,9 @@ Building good FPS weapon feel from scratch is a pile of small problems that all 
 
 1. Add `FPS Weapon Feel Component` under your camera.
 2. Place your weapon mesh as a child of the component.
-3. On each shot, call `FireShot` with an `FRecoilProfile`.
-4. On burst end, call `EndFire`.
+3. On weapon equip, call `InitializeRecoilData` with the weapon's `FRecoilProfile`.
+4. On each shot, call `FireShot`.
+5. On burst end, call `EndFire`.
 
 That's it.
 <img width="372" height="226" alt="image" src="https://github.com/user-attachments/assets/de27e70f-44fe-44ff-a243-92041f2eb6d3" />
@@ -54,22 +55,23 @@ That's it.
 // One component per character, lives under the camera
 UFPSWeaponFeelComponent
 
-  void FireShot(const FRecoilProfile& Profile)   // call per bullet
-  void EndFire()                                  // call when burst ends
-  void ResetState()                               // call on respawn / teleport
+  void InitializeRecoilData(const FRecoilProfile& Profile)  // call on weapon equip / profile change
+  void FireShot()                                            // call per bullet
+  void EndFire()                                             // call when burst ends
+  void ResetState()                                          // call on respawn / teleport
 
   // Per-character feel (set once, tweak in editor)
   RotationLag*, Movement*, Breathing*, WalkBob*
-  Intensity                                       // 0..1, smoothly interpolated (lower for ADS)
-  GlobalRecoilScale                               // master recoil multiplier
+  Intensity                                                  // 0..1, smoothly interpolated (lower for ADS)
+  GlobalRecoilScale                                          // master recoil multiplier
 
-// Per-weapon recoil profile (passed into FireShot)
+// Per-weapon recoil profile (passed into InitializeRecoilData)
 FRecoilProfile
   Strength, MeshRecoverySpeed, PatternResetDelay
-  ViewPitchKick, ViewYawSpread                    // direct degrees
-  RecoilPattern                                   // optional URecoilPattern asset
-  BackOffset, UpOffset, SideOffset                // mesh translation kick
-  MeshPitchKick, MeshYawKick, MeshRollKick        // mesh rotation kick
+  ViewPitchKick, ViewYawSpread                               // direct degrees
+  RecoilPattern                                              // optional URecoilPattern asset
+  BackOffset, UpOffset, SideOffset                           // mesh translation kick
+  MeshPitchKick, MeshYawKick, MeshRollKick                   // mesh rotation kick
 ```
 
 Full API reference, examples, and best practices ship inside the plugin in `README.md`.
@@ -80,7 +82,7 @@ Full API reference, examples, and best practices ship inside the plugin in `READ
 
 Author 2D point curves describing the per-shot view positions of a weapon's spray. Each `(X=Yaw, Y=Pitch)` point is in **degrees**. The component applies the delta between consecutive points each shot, so the view follows the authored curve. After the last point, it falls back to randomized kick (`ViewPitchKick + ViewYawSpread`).
 
-Patterns are **per-weapon assets** — make one for each gun, drop into the corresponding `FRecoilProfile.RecoilPattern`.
+Patterns are **per-weapon assets** — make one for each gun, drop into the corresponding `FRecoilProfile.RecoilPattern` and cache the profile via `InitializeRecoilData` on equip.
 
 ---
 

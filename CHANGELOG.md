@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](https://semver.org/) and the forma
 
 ## [Unreleased]
 
+### Added
+- `UFPSWeaponFeelComponent::InitializeRecoilData(const FRecoilProfile&)` — caches the per-weapon recoil profile. Call once on weapon equip / profile change instead of passing the profile on every shot.
+
+### Changed
+- **Breaking:** `FireShot` no longer takes an `FRecoilProfile` argument — it reads the profile cached by `InitializeRecoilData`. Migration: call `InitializeRecoilData(Profile)` on equip, then `FireShot()` per bullet.
+
 ## [1.0.0] — 2026-05-11
 
 Initial release.
