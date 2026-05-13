@@ -8,7 +8,7 @@
 
 [![Watch the demo](https://img.youtube.com/vi/qbaBmnnajQY/maxresdefault.jpg)](https://youtu.be/qbaBmnnajQY)
 
-▶ **[Watch the demo on YouTube](https://youtu.be/qbaBmnnajQY)** &nbsp;|&nbsp; 🎮 **[Download playable test build](https://drive.google.com/file/d/1yBWzZa6JJia65RZ-lGnIGux_5tlnMu7W/view?usp=sharing)**
+▶ **[Watch the demo on YouTube](https://youtu.be/qbaBmnnajQY)** &nbsp;|&nbsp; 🎮 **[Download playable test build](https://drive.google.com/file/d/1p-Al84lhtgHpSxKLOPgYJcZj254rgKHv/view?usp=sharing)**
 
 ---
 
@@ -96,7 +96,7 @@ Patterns are **per-weapon assets** — make one for each gun, drop into the corr
 
 ## Try it / Buy it
 
-- 🎮 [**Download playable test build**](https://drive.google.com/file/d/1yBWzZa6JJia65RZ-lGnIGux_5tlnMu7W/view?usp=sharing) — packaged demo, no engine required
+- 🎮 [**Download playable test build**](https://drive.google.com/file/d/1p-Al84lhtgHpSxKLOPgYJcZj254rgKHv/view?usp=sharing) — packaged demo, no engine required
 - ▶ [Watch the demo on YouTube](https://youtu.be/qbaBmnnajQY)
 - 🛒 Fab listing — *coming soon*
 
