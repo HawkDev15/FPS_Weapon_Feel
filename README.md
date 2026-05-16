@@ -1,175 +1,137 @@
 # FPS Weapon Feel
 
-Procedural FPS weapon motion plugin for Unreal Engine 5. Adds the small-but-essential layer of life to first-person weapons: rotation lag, movement tilt, breathing, walk bob and per-shot recoil — all framerate-independent and driven by a single component.
+> Procedural FPS weapon motion for Unreal Engine 5. Drop-in component. Sensitivity-invariant recoil. Framerate-independent. Network-ready.
 
-Includes a custom 2D Recoil Pattern asset and editor for authoring weapon spray curves visually.
+[![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.3%20%E2%80%93%205.7-blue?logo=unrealengine)](https://www.unrealengine.com/)
+[![Platform](https://img.shields.io/badge/platform-Win64-lightgrey)](#)
+[![License](https://img.shields.io/badge/license-Commercial-orange)](#license)
+
+[![Watch the demo](https://img.youtube.com/vi/qbaBmnnajQY/maxresdefault.jpg)](https://youtu.be/qbaBmnnajQY)
+
+▶ **[Watch the demo on YouTube](https://youtu.be/qbaBmnnajQY)** &nbsp;|&nbsp; 🎮 **[Download playable test build](https://drive.google.com/file/d/1p-Al84lhtgHpSxKLOPgYJcZj254rgKHv/view?usp=sharing)** &nbsp;|&nbsp; 🎁 **[Free sample content pack](https://drive.google.com/file/d/1Pgr2F6JmKzcF0SEmsLnlvIucQ8V_fdQQ/view?usp=sharing)**
+
+---
+
+## Why this plugin
+
+Building good FPS weapon feel from scratch is a pile of small problems that all have to work together: rotation lag that doesn't twitch, breathing that fades during movement, walk bob that locks to the ground, recoil that lifts the view *and* the gun, recovery that doesn't pop, and motion that looks the same on 30 FPS and 144 FPS.
+
+**FPS Weapon Feel** solves all of these in one component. Attach it under your camera, cache your weapon's profile via `InitializeRecoilData`, call `FireShot()` on every bullet, and you're done. No tick orchestration, no replication boilerplate, no math.
 
 ---
 
 ## Features
 
-- **Rotation lag** — weapon trails behind camera turns, magnitude clamped per axis.
-- **Movement tilt & lag** — body-aware tilt/offset from local velocity.
-- **Breathing** — idle sway that fades out when the character moves.
-- **Walk bob** — ground-locked sinusoidal bob proportional to speed.
-- **Per-shot recoil** — view kick (direct ControlRotation, sensitivity-invariant) + mesh kick (offset + tilt) with exponential recovery.
-- **Recoil Pattern asset** — author 2D point curves; the view follows them on consecutive shots, falling back to randomized kick after the pattern is consumed.
-- **Framerate-independent** — all interpolation uses true exponential smoothing; rotation lag is normalized to angular velocity. Identical trajectories at 30, 60, 144 FPS.
+- **Procedural motion stack** — rotation lag, movement tilt/lag, idle breathing, walk bob, all blended into one transform.
+- **Per-shot recoil** — view kick + mesh kick (offset & tilt), with optional recoil patterns.
+- **Custom Recoil Pattern asset** — author 2D spray curves in a built-in editor, hot-reload, share across weapons.
+- **Sensitivity-invariant** — recoil applied via direct ControlRotation; the same kick value lifts the view by the same number of degrees regardless of mouse DPI, `InputPitchScale`, or `bInvertMouse`.
+- **Framerate-independent** — true exponential smoothing, not Unreal's linear `*InterpTo` approximation. Identical trajectories at any FPS.
+- **Per-weapon profiles** — `FRecoilProfile` carries all weapon-specific data. Pass a different profile per gun.
 - **Network-safe** — Tick and FireShot are no-ops on remote proxies and the server.
+- **Blueprint-first** — every method is `BlueprintCallable`, every property is `BlueprintReadWrite`. No C++ required.
+
+---
+
+## Quick Start
+
+1. Add `FPS Weapon Feel Component` under your camera.
+2. Place your weapon mesh as a child of the component.
+3. On weapon equip, call `InitializeRecoilData` with the weapon's `FRecoilProfile`.
+4. On each shot, call `FireShot`.
+5. On burst end, call `EndFire`.
+
+That's it.
+<img width="372" height="226" alt="image" src="https://github.com/user-attachments/assets/de27e70f-44fe-44ff-a243-92041f2eb6d3" />
+<img width="1347" height="684" alt="image" src="https://github.com/user-attachments/assets/8b7bd8cc-6f97-44a7-a9d9-a1294fb6031f" />
+
+![Recoil Pattern editor](Images/pattern-editor.png)
+
+---
+
+## API at a glance
+
+```cpp
+// One component per character, lives under the camera
+UFPSWeaponFeelComponent
+
+  void InitializeRecoilData(const FRecoilProfile& Profile)  // call on weapon equip / profile change
+  void FireShot()                                            // call per bullet
+  void EndFire()                                             // call when burst ends
+  void ResetState()                                          // call on respawn / teleport
+
+  // Per-character feel (set once, tweak in editor)
+  RotationLag*, Movement*, Breathing*, WalkBob*
+  Intensity                                                  // 0..1, smoothly interpolated (lower for ADS)
+  GlobalRecoilScale                                          // master recoil multiplier
+
+// Per-weapon recoil profile (passed into InitializeRecoilData)
+FRecoilProfile
+  Strength, MeshRecoverySpeed, PatternResetDelay
+  ViewPitchKick, ViewYawSpread                               // direct degrees
+  RecoilPattern                                              // optional URecoilPattern asset
+  BackOffset, UpOffset, SideOffset                           // mesh translation kick
+  MeshPitchKick, MeshYawKick, MeshRollKick                   // mesh rotation kick
+```
+
+Full API reference, examples, and best practices ship inside the plugin in `README.md`.
+
+---
+
+## Recoil Pattern asset
+
+Author 2D point curves describing the per-shot view positions of a weapon's spray. Each `(X=Yaw, Y=Pitch)` point is in **degrees**. The component applies the delta between consecutive points each shot, so the view follows the authored curve. After the last point, it falls back to randomized kick (`ViewPitchKick + ViewYawSpread`).
+
+Patterns are **per-weapon assets** — make one for each gun, drop into the corresponding `FRecoilProfile.RecoilPattern` and cache the profile via `InitializeRecoilData` on equip.
+
+---
+
+## Sample Content (Free)
+
+A free sample pack is available — a ready-to-play FPS character with the component pre-wired, weapon mesh + projectile, GameMode, input setup, prototyping map, and an example Recoil Pattern asset.
+
+**Download:** [Sample content pack (Google Drive)](https://drive.google.com/file/d/1Pgr2F6JmKzcF0SEmsLnlvIucQ8V_fdQQ/view?usp=sharing)
+
+**Install:**
+
+1. Install the plugin and enable it in **Edit → Plugins**.
+2. Download and unzip the sample content.
+3. Drop the unpacked folders into your project's `Content/` folder.
+4. Open the sample map and play.
 
 ---
 
 ## Requirements
 
 - Unreal Engine **5.3 / 5.4 / 5.5 / 5.6 / 5.7**
-- C++ project (or Blueprint-only project — the component is fully BlueprintCallable).
+- Windows 64-bit (other platforms on request)
+- Works in C++ and Blueprint projects
 
 ---
 
-## Quick Start
+## Try it / Buy it
 
-### 1. Attach the component
-
-In your `ACharacter` Blueprint or C++ class, build the following hierarchy under the camera:
-
-```
-Mesh1P (Character)
-└── Camera
-    └── FPSWeaponFeelComponent       ← this plugin
-        └── WeaponPivot (SceneComp)
-            └── FP_Mesh (SkeletalMesh)
-```
-
-The component **must** be a child of the camera. The FPS arms/weapon mesh goes underneath.
-
-### 2. Tune the per-character feel
-
-Select the component and adjust in Details:
-
-- **Rotation / Movement / Breathing / Walk** sections — per-character motion. Set once per character, leave alone.
-- **Intensity** — global multiplier (0–1). Lower this while aiming down sights for tighter feel.
-- **GlobalRecoilScale** — master recoil multiplier.
-
-### 3. Initialize the recoil profile on weapon equip
-
-Once per weapon equip (or whenever the active profile changes — e.g. firemode switch), cache the per-weapon profile:
-
-```cpp
-FRecoilProfile Profile;
-Profile.Strength = 1.f;
-Profile.ViewPitchKick = 0.4f;        // degrees up per shot
-Profile.ViewYawSpread = 0.375f;      // degrees random ± horizontal
-Profile.BackOffset = 7.f;
-Profile.UpOffset = 1.f;
-Profile.SideOffset = 0.5f;
-Profile.MeshRecoverySpeed = 12.f;
-Profile.RecoilPattern = MyAKPattern; // optional URecoilPattern asset
-
-FeelComponent->InitializeRecoilData(Profile);
-```
-
-### 4. Fire shots from your weapon
-
-On every shot:
-
-```cpp
-FeelComponent->FireShot();
-```
-
-When the player releases fire (end of burst):
-
-```cpp
-FeelComponent->EndFire();
-```
-
-That's it. The component handles everything else internally.
+- 🎮 [**Download playable test build**](https://drive.google.com/file/d/1p-Al84lhtgHpSxKLOPgYJcZj254rgKHv/view?usp=sharing) — packaged demo, no engine required
+- 🎁 [**Free sample content pack**](https://drive.google.com/file/d/1Pgr2F6JmKzcF0SEmsLnlvIucQ8V_fdQQ/view?usp=sharing) — character, weapon, map, GameMode
+- ▶ [Watch the demo on YouTube](https://youtu.be/qbaBmnnajQY)
+- 🛒 Fab listing — *coming soon*
 
 ---
 
-## API Reference
+## Support
 
-### `UFPSWeaponFeelComponent`
-
-| Function | Description |
-|---|---|
-| `InitializeRecoilData(const FRecoilProfile& Profile)` | Cache the per-weapon recoil profile. Call once on weapon equip / profile change. |
-| `FireShot()` | Apply one recoil kick. Call once per bullet from your weapon code. Uses the cached profile. |
-| `EndFire()` | Signal end of a burst. Resets pattern shot index. |
-| `ResetState()` | Hard-resets all accumulated motion. Call on respawn or teleport. |
-
-### `FRecoilProfile` (per-weapon, passed into `InitializeRecoilData`)
-
-| Field | Default | Meaning |
-|---|---|---|
-| `Strength` | 1.0 | Per-shot multiplier (use to scale ADS vs hip-fire). |
-| `MeshRecoverySpeed` | 12.0 | How fast mesh kick recovers (1/sec). |
-| `ViewPitchKick` | 0.4 | Direct pitch in **degrees** added to ControlRotation. Positive = upward. |
-| `ViewYawSpread` | 0.375 | Random yaw spread in degrees (±). Used when no pattern is active. |
-| `RecoilPattern` | null | Optional `URecoilPattern` asset. Each `(X=Yaw, Y=Pitch)` point in degrees. |
-| `PatternResetDelay` | 0.4 | Seconds without firing before pattern index resets. |
-| `BackOffset` / `UpOffset` / `SideOffset` | 7 / 1 / 0.5 | Mesh translation kick. |
-| `MeshPitchKick` / `MeshYawKick` / `MeshRollKick` | 0 / 0 / 0 | Mesh rotation kick (rolled randomly within ±). Defaults disabled — translation-only kick. Increase if you want the gun to twist. |
+- Bugs / requests → [GitHub Issues](https://github.com/HawkDev15/FPS_Weapon_Feel/issues)
+- Email → kyrylo.kabak@gmail.com
+- See [CHANGELOG.md](CHANGELOG.md) for version history
 
 ---
 
-## Recoil Pattern Asset
+## License
 
-`URecoilPattern` is a 2D point list authored in a custom editor (open via Asset Editor on the asset).
+The **plugin itself** (source code, assets, binaries) is sold under a commercial Fab license — see the Fab listing for terms.
 
-- **Points are absolute view positions per shot**, relative to `Points[0]` (burst origin).
-- Positive X = view moves right. Positive Y = view moves up.
-- The component applies the **delta** between consecutive points each shot, so the view follows the authored curve.
-- After the last point is consumed, recoil falls back to `ViewPitchKick + ViewYawSpread` (still framerate-independent).
-- A pattern is **per-weapon** — store it in your weapon data and pass via `FRecoilProfile.RecoilPattern`.
+The **documentation in this repository** (README, CHANGELOG, images) is released under the [MIT License](LICENSE), so you can quote it freely.
 
 ---
 
-## Tips
-
-- **ADS:** set `Intensity = 0.3` and `GlobalRecoilScale = 0.3` while aiming. The component smoothly interpolates intensity via `IntensityInterpSpeed`.
-- **Respawn:** call `ResetState()` to avoid first-frame motion spikes from accumulated state.
-- **Multiple weapons:** pass a different `FRecoilProfile` per weapon. The component caches the last profile to drive Tick-time recovery, so weapon swaps just work.
-- **No view kick when you want pure mesh feedback:** set `ViewPitchKick = 0` and `ViewYawSpread = 0` — the component skips the ControlRotation write entirely.
-
----
-
-## Notes
-
-- Recoil is applied directly via `PlayerController->SetControlRotation()` — **independent of mouse sensitivity, `InputPitchScale` and `bInvertMouse`**. The same `ViewPitchKick` value produces the same on-screen kick for every player.
-- All interpolation uses true exponential smoothing (`1 - exp(-Speed * DeltaTime)`), not Unreal's linear `*InterpTo` approximation. Recovery curves are identical at any frame rate.
-- Rotation lag normalizes input to angular velocity referenced to 60 FPS, so the lag amount is frame-rate independent.
-
----
-
-## Sample Content (Free Download)
-
-A ready-to-play sample is available as a **free separate download** — FPS character with the component pre-wired, weapon mesh + projectile, GameMode, input setup, prototyping map, and an example `Recoil Pattern` asset.
-
-**Download:** https://drive.google.com/file/d/1Pgr2F6JmKzcF0SEmsLnlvIucQ8V_fdQQ/view?usp=sharing
-
-### Installation
-
-1. Install the plugin and enable it in **Edit → Plugins**.
-2. Download and unzip the sample content.
-3. Drop the unpacked folders into your project's `Content/` folder.
-4. Done — open the sample map and play.
-
----
-
-## FAQ
-
-### Does the plugin work in Blueprint-only projects?
-
-Yes. The DLLs are pre-compiled — no C++ project required. Just enable the plugin in **Edit → Plugins**.
-
-### Do I need the sample content to use the plugin?
-
-No. The sample is purely a starting point. The plugin works fine in any project — just add `UFPSWeaponFeelComponent` to your character under the camera.
-
----
-
-## Author
-
-**Lamedev** (Kyrylo Kabak)
-[LinkedIn](https://www.linkedin.com/in/kyrylo-kabak-a3a2a5194)
-Support: kyrylo.kabak@gmail.com
+**Author:** [Lamedev](https://www.linkedin.com/in/kyrylo-kabak-a3a2a5194) (Kyrylo Kabak)
